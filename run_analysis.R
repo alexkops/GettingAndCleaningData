@@ -23,8 +23,8 @@ names(testActivities) <- "activity"
 names(testSubjects) <- "subject"
 
 # Drop all colums that don't contain mean or std deviations
-trainFeatures <- trainFeatures[, grep("*.mean()*. | *.std()*.", colnames(trainFeatures))]
-testFeatures <- testFeatures[, grep("*.mean()*. | *.std()*.", colnames(testFeatures))]
+trainFeatures <- trainFeatures[, grep("mean[(]|std[(]", colnames(trainFeatures))]
+testFeatures <- testFeatures[, grep("*.mean[(]|std[(]", colnames(testFeatures))]
 
 # Remove the parentheses from the column names 
 colnames(trainFeatures) <- gsub('()', '', colnames(trainFeatures), fixed=TRUE)
@@ -41,6 +41,10 @@ complete <- tbl_df(completeSet) %>%
   mutate(activity = activities$V2[activity])
 
 # Create a new set that contains the mean of the set grouped by subject and activity
-# and write it to a file
+# Also renames the "std" columns to "stdMean" to make clear that is the mean of
+# the standard deviations
 newSet <- group_by(complete, subject, activity) %>% 
-  summarise_all(mean) %>% write.csv(., file = "result-summarized.csv")
+  summarise_all(mean) %>% setNames(gsub("std","stdMean",names(.)))
+
+# Writes the new set to a file.
+write.csv(newSet, file = "result-summarized.csv")
